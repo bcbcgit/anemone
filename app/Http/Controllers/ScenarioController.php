@@ -22,6 +22,7 @@ class ScenarioController extends Controller
         $kinds = Kind::orderBy('title')->get();
         $elements = Element::orderBy('title')->get();
         $scenarios = Scenario::with('kinds:id,title','elements:id,title')
+            ->where('visible', 1)
             ->latest('id')
             ->get();
 
