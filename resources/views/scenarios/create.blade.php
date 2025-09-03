@@ -40,6 +40,25 @@
                 </p>
             </div>
 
+                <!-- メイン画像 -->
+                <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+                    <label class="block text-sm font-medium text-slate-700">メイン画像ファイル</label>
+                    <div class="mt-1 flex items-start gap-4">
+                        <input id="imageInput" name="image" type="file" accept="image/*" class="form-input">
+
+                        <div class="flex items-start gap-3" id="previewWrap" style="display:none">
+                            <img id="previewImg" alt="preview"
+                                 class="w-24 h-24 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
+                            <div class="text-xs leading-6" id="previewMeta"></div>
+                            <button type="button"
+                                    class="rounded-md border border-slate-200 px-3 py-2 text-sm h-9"
+                                    id="clearImageBtn">削除</button>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">推奨：JPG/PNG、5MB 以下。</p>
+                    <p id="imageError" class="mt-1 text-xs text-red-600" style="display:none"></p>
+                </div>
+
             {{-- 本文 --}}
             <div>
                 <label class="block text-sm font-medium text-slate-700">シナリオ本文</label>
@@ -173,25 +192,6 @@
             <textarea id="memo" name="memo" rows="4" maxlength="1000"
                       class="form-input mt-1" placeholder="補足事項や運用ルールなどを記入">{{ old('memo') }}</textarea>
             <p class="mt-1 text-xs text-slate-500"><span id="memoCount">{{ mb_strlen(old('memo','')) }}</span>/1000</p>
-        </div>
-
-        <!-- メイン画像 -->
-        <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-            <label class="block text-sm font-medium text-slate-700">メイン画像ファイル</label>
-            <div class="mt-1 flex items-start gap-4">
-                <input id="imageInput" name="image" type="file" accept="image/*" class="form-input">
-
-                <div class="flex items-start gap-3" id="previewWrap" style="display:none">
-                    <img id="previewImg" alt="preview"
-                         class="w-24 h-24 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
-                    <div class="text-xs leading-6" id="previewMeta"></div>
-                    <button type="button"
-                            class="rounded-md border border-slate-200 px-3 py-2 text-sm h-9"
-                            id="clearImageBtn">削除</button>
-                </div>
-            </div>
-            <p class="mt-1 text-xs text-slate-500">推奨：JPG/PNG、5MB 以下。</p>
-            <p id="imageError" class="mt-1 text-xs text-red-600" style="display:none"></p>
         </div>
 
         <!-- アクション -->

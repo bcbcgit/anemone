@@ -42,6 +42,33 @@
                 <p class="mt-1 text-xs" id="urlMsg" aria-live="polite"></p>
             </div>
 
+                {{-- メイン画像（現在の画像 + 差し替えプレビュー） --}}
+                <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+                    <label class="block text-sm font-medium text-slate-700">メイン画像ファイル</label>
+
+                    @if (!empty($scenario->image))
+                        <div class="mt-1 flex items-start gap-4">
+                            <div class="text-xs">
+                                <div class="text-slate-500 mb-1">現在の画像</div>
+                                <img src="{{ asset('storage/'.$scenario->image) }}" alt="current"
+                                     class="w-24 h-24 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
+                                <div class="mt-1 text-slate-500">差し替える場合は下で新しい画像を選択</div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="mt-3 flex items-start gap-4">
+                        <input id="imageInput" name="image" type="file" accept="image/*" class="form-input">
+                        <div class="flex items-start gap-3" id="previewWrap" style="display:none">
+                            <img id="previewImg" alt="preview" class="w-24 h-24 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
+                            <div class="text-xs leading-6" id="previewMeta"></div>
+                            <button type="button" class="rounded-md border border-slate-200 px-3 py-2 text-sm h-9" id="clearImageBtn">削除</button>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">推奨：JPG/PNG、5MB 以下。</p>
+                    <p id="imageError" class="mt-1 text-xs text-red-600" style="display:none"></p>
+                </div>
+
             {{-- 本文 --}}
             <div>
                 <label class="block text-sm font-medium text-slate-700">シナリオ本文</label>
@@ -177,33 +204,6 @@
             <p class="mt-1 text-xs text-slate-500"><span id="memoCount">{{ mb_strlen(old('memo', $scenario->memo ?? '')) }}</span>/1000</p>
         </div>
 
-        {{-- メイン画像（現在の画像 + 差し替えプレビュー） --}}
-        <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-            <label class="block text-sm font-medium text-slate-700">メイン画像ファイル</label>
-
-            @if (!empty($scenario->image))
-                <div class="mt-1 flex items-start gap-4">
-                    <div class="text-xs">
-                        <div class="text-slate-500 mb-1">現在の画像</div>
-                        <img src="{{ asset('storage/'.$scenario->image) }}" alt="current"
-                             class="w-24 h-24 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
-                        <div class="mt-1 text-slate-500">差し替える場合は下で新しい画像を選択</div>
-                    </div>
-                </div>
-            @endif
-
-            <div class="mt-3 flex items-start gap-4">
-                <input id="imageInput" name="image" type="file" accept="image/*" class="form-input">
-                <div class="flex items-start gap-3" id="previewWrap" style="display:none">
-                    <img id="previewImg" alt="preview" class="w-24 h-24 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
-                    <div class="text-xs leading-6" id="previewMeta"></div>
-                    <button type="button" class="rounded-md border border-slate-200 px-3 py-2 text-sm h-9" id="clearImageBtn">削除</button>
-                </div>
-            </div>
-            <p class="mt-1 text-xs text-slate-500">推奨：JPG/PNG、5MB 以下。</p>
-            <p id="imageError" class="mt-1 text-xs text-red-600" style="display:none"></p>
-        </div>
-
         {{-- アクション --}}
         <div class="flex items-center justify-end gap-2">
             <a href="{{ route('scenarios.index') }}" class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">戻る</a>
@@ -228,7 +228,7 @@
             </button>
         </form>
     </div>
-    
+
     {{-- Vanilla JS only --}}
     <script>
         (function(){
