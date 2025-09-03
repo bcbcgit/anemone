@@ -31,13 +31,3 @@ Route::middleware('auth')->group(function () {
     // ログアウト
     Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 });
-
-Route::get('/_debug-proxy', function (\Illuminate\Http\Request $request) {
-    return [
-        'isSecure' => $request->isSecure(),
-        'url'      => $request->fullUrl(),
-        'proto'    => $request->header('x-forwarded-proto'),
-        'port'     => $request->header('x-forwarded-port'),
-        'ip'       => $request->ip(),
-    ];
-});
