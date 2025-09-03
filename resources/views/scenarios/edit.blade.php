@@ -213,6 +213,22 @@
         </div>
     </form>
 
+    {{-- 危険エリア：削除 --}}
+    <div class="mt-6 rounded-md border border-rose-200 bg-rose-50 p-4">
+        <h3 class="font-medium text-rose-800 text-sm">危険エリア</h3>
+        <p class="mt-1 text-xs text-rose-700">このシナリオを削除すると元に戻せません。関連付け・画像も削除されます。</p>
+
+        <form action="{{ route('scenarios.destroy', $scenario) }}" method="post" class="mt-3"
+              onsubmit="return window.confirm('本当に削除しますか？（この操作は取り消せません）');">
+            @csrf
+            @method('DELETE')
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-md bg-rose-600 text-white px-4 py-2 text-sm hover:bg-rose-500">
+                削除する
+            </button>
+        </form>
+    </div>
+    
     {{-- Vanilla JS only --}}
     <script>
         (function(){

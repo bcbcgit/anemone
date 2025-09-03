@@ -139,14 +139,21 @@ class ScenarioController extends Controller
             DB::beginTransaction();
 
             $image = $scenario->image;
+
+            // 関連の掃除（kinds / elements）
             $scenario->kinds()->detach();
+            if (method_exists($scenario, 'elements')) {
+                $scenario->elements()->detach();
+            }
+
             $scenario->delete();
 
             DB::commit();
 
+            // 画像ファイルはコミット後に削除
             if ($image) Storage::disk('public')->delete($image);
 
-            return back()->with('success', 'シナリオを削除しました。');
+            return redirect()->route('scenarios.index')->with('success', 'シナリオを削除しました。');
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
