@@ -83,6 +83,7 @@
                         タイトル <span class="js-sort-icon text-slate-400">↕</span>
                     </button>
                 </th>
+                <th class="py-2 px-3">URL</th>
                 <th class="py-2 px-3">
                     <button type="button" class="inline-flex items-center gap-1 js-sort" data-key="body">
                         本文 <span class="js-sort-icon text-slate-400">↕</span>
@@ -140,6 +141,11 @@
                     <td class="py-2 px-3">
                         <div class="font-medium text-slate-900">
                             <a href="{{ route('scenarios.show', $scenario) }}">{{ $scenario->title }}</a>
+                        </div>
+                    </td>
+                    <td class="py-2 px-3">
+                        <div class="font-medium text-slate-900">
+                            <a href="{{ $scenario->url }}" target="_blank"><i class="fa-solid fa-link"></i></a>
                         </div>
                     </td>
                     <td class="py-2 px-3 text-slate-700 js-body">
