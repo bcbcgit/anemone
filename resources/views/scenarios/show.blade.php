@@ -15,8 +15,8 @@
                     <div class="block text-sm font-medium text-slate-700">メイン画像</div>
                     @if(!empty($scenario->image))
                         <div class="mt-2">
-                            <img src="{{ asset('storage/'.$scenario->image) }}" alt="main image"
-                                 class="max-w-full w-64 h-64 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
+                            <a href="{{ $scenario->url }}" target="_blank"><img src="{{ asset('storage/'.$scenario->image) }}" alt="main image"
+                                                                                class="max-w-full w-64 h-64 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50"></a>
                         </div>
                     @else
                         <div class="mt-1 text-slate-500">未設定</div>
@@ -26,7 +26,7 @@
                 {{-- シナリオ名 --}}
                 <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
                     <div class="block text-sm font-medium text-slate-700">シナリオ名</div>
-                    <div class="mt-1 text-slate-900">{{ $scenario->title }}</div>
+                    <div class="mt-1 text-slate-900"><a href="{{ $scenario->url }}" target="_blank">{{ $scenario->title }}</a></div>
                 </div>
 
                 {{-- タグ --}}
