@@ -3,7 +3,7 @@
 
 @section('title', 'シナリオ管理')
 @section('page_title', 'シナリオ一覧')
-@section('page_desc', '本文検索 / 種別絞り込み / 列ソート（JSのみ）')
+@section('page_desc', '本文検索 / 種別絞り込み / 要素絞り込み / 列ソート（JSのみ）')
 
 @section('content')
     @php
@@ -42,7 +42,32 @@
             </div>
         </div>
 
-        <p class="text-xs text-slate-500">※ 種別は「選択したすべてを含む（AND）」かつ本文検索に一致した行のみ表示します。</p>
+        <!-- シナリオ要素（横並びチェック） -->
+        <div>
+            <div class="flex items-center justify-between">
+                <label class="block text-sm font-medium text-slate-700">シナリオ要素（複数選択）</label>
+                <div class="flex gap-2">
+                    <button type="button" class="rounded-md border px-2 py-1 text-xs" id="selectAllElements">全選択</button>
+                    <button type="button" class="rounded-md border px-2 py-1 text-xs" id="clearElements">クリア</button>
+                </div>
+            </div>
+            <div id="elementFilters" class="mt-2 flex flex-wrap gap-3">
+                @forelse($elements as $el)
+                    <label class="inline-flex items-center gap-2 text-sm">
+                        <input type="checkbox"
+                               class="js-element rounded-md border border-slate-400 focus:border-slate-600 focus:ring-slate-500"
+                               value="{{ $el->id }}">
+                        <span class="select-none">{{ $el->title }}</span>
+                    </label>
+                @empty
+                    <p class="text-sm text-slate-500">シナリオ要素はまだありません。</p>
+                @endforelse
+            </div>
+        </div>
+
+        <p class="text-xs text-slate-500">
+            ※ 種別・要素は「選択したすべてを含む（AND）」かつ本文検索に一致した行のみ表示します。
+        </p>
         <p id="resultCount" class="text-xs text-slate-600">表示件数: 0 件</p>
     </div>
 
@@ -77,15 +102,25 @@
                         シナリオ種別 <span class="js-sort-icon text-slate-400">↕</span>
                     </button>
                 </th>
+                <th class="py-2 px-3">
+                    <button type="button" class="inline-flex items-center gap-1 js-sort" data-key="elements">
+                        シナリオ要素 <span class="js-sort-icon text-slate-400">↕</span>
+                    </button>
+                </th>
             </tr>
             </thead>
             <tbody id="scenarioTbody">
             @forelse($scenarios as $scenario)
                 @php
-                    $img     = $scenario->image ? Storage::url($scenario->image) : asset('images/no_image.png');
-                    $tagIds  = $scenario->kinds->pluck('id')->implode(',');
-                    $tagText = $scenario->kinds->pluck('title')->implode(', ');
-                    $ts      = optional($scenario->created_at)->timestamp ?? 0; // 並べ替え用
+                    $img       = $scenario->image ? Storage::url($scenario->image) : asset('images/no_image.png');
+                    $tagIds    = $scenario->kinds->pluck('id')->implode(',');
+                    $tagText   = $scenario->kinds->pluck('title')->implode(', ');
+
+                    // 追加：elements 用
+                    $elIds     = $scenario->elements->pluck('id')->implode(',');
+                    $elText    = $scenario->elements->pluck('title')->implode(', ');
+
+                    $ts        = optional($scenario->created_at)->timestamp ?? 0; // 並べ替え用
                 @endphp
                 <tr class="border-b last:border-0 hover:bg-slate-50 align-top"
                     data-id="{{ $scenario->id }}"
@@ -95,13 +130,21 @@
                     data-created-ts="{{ $ts }}"
                     data-tags="{{ $tagIds }}"
                     data-tag-names="{{ e($tagText) }}"
+                    data-elements="{{ $elIds }}"
+                    data-element-names="{{ e($elText) }}"
                 >
-                    <td class="py-2 px-3 font-medium text-slate-900"><a href="{{ route('scenarios.edit', $scenario) }}">{{ $scenario->id }}</a></td>
-                    <td class="py-2 px-3">
-                        <a href="{{ route('scenarios.show', $scenario) }}"><img src="{{ $img }}" alt="" class="w-16 h-16 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50"></a>
+                    <td class="py-2 px-3 font-medium text-slate-900">
+                        <a href="{{ route('scenarios.edit', $scenario) }}">{{ $scenario->id }}</a>
                     </td>
                     <td class="py-2 px-3">
-                        <div class="font-medium text-slate-900"><a href="{{ route('scenarios.show', $scenario) }}">{{ $scenario->title }}</a></div>
+                        <a href="{{ route('scenarios.show', $scenario) }}">
+                            <img src="{{ $img }}" alt="" class="w-16 h-16 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
+                        </a>
+                    </td>
+                    <td class="py-2 px-3">
+                        <div class="font-medium text-slate-900">
+                            <a href="{{ route('scenarios.show', $scenario) }}">{{ $scenario->title }}</a>
+                        </div>
                     </td>
                     <td class="py-2 px-3 text-slate-700 js-body">
                         {{ Str::limit($scenario->body, 120) }}
@@ -120,22 +163,38 @@
                             @endforelse
                         </div>
                     </td>
+                    <td class="py-2 px-3">
+                        <div class="flex flex-wrap gap-1">
+                            @forelse($scenario->elements as $el)
+                                <span class="px-2 py-0.5 rounded-md text-xs bg-slate-50 ring-1 ring-slate-200 text-slate-700">
+                                    {{ $el->title }}
+                                </span>
+                            @empty
+                                <span class="text-xs text-slate-400">（なし）</span>
+                            @endforelse
+                        </div>
+                    </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="py-6 px-3 text-center text-slate-500">シナリオはありません。</td></tr>
+                <tr><td colspan="7" class="py-6 px-3 text-center text-slate-500">シナリオはありません。</td></tr>
             @endforelse
             </tbody>
         </table>
     </div>
 
-    {{-- Vanilla JS --}}
+    {{-- Vanilla JS：検索・絞り込み・並べ替え --}}
     <script>
         (function(){
-            const qInput     = document.getElementById('q');
-            const kindCtn    = document.getElementById('kindFilters');
-            const kindBoxes  = () => Array.from(document.querySelectorAll('.js-kind'));
-            const selectAll  = document.getElementById('selectAllKinds');
-            const clearKinds = document.getElementById('clearKinds');
+            const qInput       = document.getElementById('q');
+            const kindCtn      = document.getElementById('kindFilters');
+            const kindBoxes    = () => Array.from(document.querySelectorAll('.js-kind'));
+            const selectAll    = document.getElementById('selectAllKinds');
+            const clearKinds   = document.getElementById('clearKinds');
+
+            const elementCtn   = document.getElementById('elementFilters');
+            const elementBoxes = () => Array.from(document.querySelectorAll('.js-element'));
+            const selectAllEl  = document.getElementById('selectAllElements');
+            const clearEls     = document.getElementById('clearElements');
 
             const tbody   = document.getElementById('scenarioTbody');
             const table   = document.getElementById('scenarioTable');
@@ -146,7 +205,8 @@
 
             const state = {
                 q: '',
-                kinds: new Set(),   // 選択中の kind_id（文字列）
+                kinds: new Set(),     // 選択中の kind_id（文字列）
+                elements: new Set(),  // 選択中の element_id（文字列）
                 sortKey: 'created_at',
                 sortAsc: false,
             };
@@ -161,14 +221,18 @@
                 const body  = tr.dataset.body  || '';
                 const url   = tr.dataset.url   || '';
                 const createdTs = parseInt(tr.dataset.createdTs, 10) || 0;
-                const tags  = (tr.dataset.tags || '').split(',').filter(Boolean);       // 文字列配列（id）
-                const tagNames = (tr.dataset.tagNames || '').toLowerCase();            // 並べ替え/検索用
-                return {el: tr, id, title, body, url, createdTs, tags, tagNames};
+
+                const tags      = (tr.dataset.tags || '').split(',').filter(Boolean);      // kind ids
+                const tagNames  = (tr.dataset.tagNames || '').toLowerCase();
+
+                const elements     = (tr.dataset.elements || '').split(',').filter(Boolean); // element ids
+                const elementNames = (tr.dataset.elementNames || '').toLowerCase();
+
+                return {el: tr, id, title, body, url, createdTs, tags, tagNames, elements, elementNames};
             };
 
             const applyFiltersAndSort = () => {
                 const q = state.q.trim().toLowerCase();
-                const selKinds = state.kinds;
                 const filtered = [];
 
                 // 1) フィルタ
@@ -180,13 +244,16 @@
                         (textIncludes(d.title, q) || textIncludes(d.body, q) || textIncludes(d.url, q));
 
                     // 種別（選択されたすべてを含む AND。未選択なら全通過）
-                    const kindsOK = selKinds.size === 0
+                    const kindsOK = state.kinds.size === 0
                         ? true
-                        : [...selKinds].every(k => d.tags.includes(String(k)));
-                        // OR検索なら
-                        // : d.tags.some(t => selKinds.has(String(t)));
+                        : [...state.kinds].every(k => d.tags.includes(String(k)));
 
-                    const show = qOK && kindsOK;
+                    // 要素（選択されたすべてを含む AND。未選択なら全通過）
+                    const elementsOK = state.elements.size === 0
+                        ? true
+                        : [...state.elements].every(eid => d.elements.includes(String(eid)));
+
+                    const show = qOK && kindsOK && elementsOK;
                     tr.style.display = show ? '' : 'none';
                     if (show) filtered.push(d);
                 });
@@ -196,11 +263,12 @@
                 const dir = state.sortAsc ? 1 : -1;
 
                 filtered.sort((a,b) => {
-                    if (key === 'id') return dir * (a.id - b.id);
+                    if (key === 'id')         return dir * (a.id - b.id);
                     if (key === 'created_at') return dir * (a.createdTs - b.createdTs);
-                    if (key === 'title') return dir * String(a.title).localeCompare(String(b.title), 'ja');
-                    if (key === 'body')  return dir * String(a.body).localeCompare(String(b.body), 'ja');
-                    if (key === 'tags')  return dir * String(a.tagNames).localeCompare(String(b.tagNames), 'ja');
+                    if (key === 'title')      return dir * String(a.title).localeCompare(String(b.title), 'ja');
+                    if (key === 'body')       return dir * String(a.body).localeCompare(String(b.body), 'ja');
+                    if (key === 'tags')       return dir * String(a.tagNames).localeCompare(String(b.tagNames), 'ja');
+                    if (key === 'elements')   return dir * String(a.elementNames).localeCompare(String(b.elementNames), 'ja');
                     return 0;
                 });
 
@@ -240,6 +308,25 @@
                 applyFiltersAndSort();
             });
 
+            elementCtn?.addEventListener('change', (e) => {
+                const cb = e.target.closest('.js-element');
+                if (!cb) return;
+                if (cb.checked) state.elements.add(cb.value);
+                else state.elements.delete(cb.value);
+                applyFiltersAndSort();
+            });
+
+            selectAllEl?.addEventListener('click', () => {
+                elementBoxes().forEach(cb => { cb.checked = true; state.elements.add(cb.value); });
+                applyFiltersAndSort();
+            });
+
+            clearEls?.addEventListener('click', () => {
+                elementBoxes().forEach(cb => { cb.checked = false; });
+                state.elements.clear();
+                applyFiltersAndSort();
+            });
+
             sortBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const key = btn.dataset.key;
@@ -270,13 +357,12 @@
         })();
     </script>
 
+    {{-- Vanilla JS：本文ホバーツールチップ（セル左上固定） --}}
     <script>
         (function(){
-            // --- 本文ホバーツールチップ（セル左上固定） ---
             const tbody = document.getElementById('scenarioTbody');
             if (!tbody) return;
 
-            // 使い回すツールチップ要素
             const tip = document.createElement('div');
             Object.assign(tip.style, {
                 position: 'fixed',
@@ -316,22 +402,18 @@
 
             const positionTipAtCell = (cell) => {
                 if (!cell) return;
-                // セル位置（ビューポート基準）
                 const c = cell.getBoundingClientRect();
-                // いったん表示してサイズ取得
                 tip.style.left = '0px';
                 tip.style.top  = '0px';
                 const rect = tip.getBoundingClientRect();
 
                 const vw = window.innerWidth;
                 const vh = window.innerHeight;
-                const margin = 6; // セルから少し離す
+                const margin = 6;
 
-                // 基本はセル左上に配置
                 let left = c.left + margin;
                 let top  = c.top  + margin;
 
-                // 画面外にはみ出さないようにクランプ
                 if (left + rect.width > vw - 8) left = Math.max(8, vw - rect.width - 8);
                 if (top  + rect.height > vh - 8) top  = Math.max(8, vh - rect.height - 8);
                 left = Math.max(8, left);
@@ -353,21 +435,18 @@
             const onMouseOut = (e) => {
                 const leftCell = e.target.closest?.('td.js-body');
                 const intoTip  = e.relatedTarget && (e.relatedTarget === tip || tip.contains(e.relatedTarget));
-                // 対象セルから離れ、かつツールチップにも入っていない → 閉じる
                 if (leftCell && !intoTip) {
                     currentCell = null;
                     if (!overTip) hideTip();
                 }
             };
 
-            // ツールチップ上の入退
             tip.addEventListener('mouseenter', () => { overTip = true; });
             tip.addEventListener('mouseleave', () => {
                 overTip = false;
                 if (!currentCell) hideTip();
             });
 
-            // スクロール/リサイズ時は再配置（セルがまだホバー対象なら）
             const onScrollOrResize = () => {
                 if (tip.style.display === 'none') return;
                 if (currentCell) {
@@ -382,7 +461,16 @@
             window.addEventListener('scroll', onScrollOrResize, { passive: true });
             window.addEventListener('resize', onScrollOrResize);
 
+            // ★ ESCキーで閉じる処理を追加
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    currentCell = null;
+                    overTip = false;
+                    hideTip();
+                }
+            });
         })();
     </script>
+
 
 @endsection

@@ -123,6 +123,52 @@
             </div>
         </div>
 
+        {{-- シナリオ要素（複数選択 + その場で新規登録） --}}
+        <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm space-y-6">
+            <div>
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium text-slate-700">シナリオ要素（複数選択）</label>
+                    <div class="flex gap-2">
+                        <button type="button" class="rounded-md border border-slate-200 px-2 py-1 text-xs" data-select-all="elements">全選択</button>
+                        <button type="button" class="rounded-md border border-slate-200 px-2 py-1 text-xs" data-clear="elements">選択解除</button>
+                    </div>
+                </div>
+
+                <div class="mt-2 flex gap-2">
+                    <input id="newElementTitle" type="text" class="form-input flex-1" placeholder="新しいシナリオ要素を入力して Enter / 追加">
+                    <button type="button" id="addElementBtn" class="rounded-md border border-slate-200 px-3 py-2 text-sm">追加</button>
+                </div>
+                <p id="newElementError" class="mt-1 text-xs text-red-600" style="display:none"></p>
+                <p id="newElementOk" class="mt-1 text-xs text-emerald-600" style="display:none"></p>
+
+                @php
+                    $checkedElementIds = collect(old('elements', optional($scenario->elements)->pluck('id')->map(fn($v)=>(string)$v)->all() ?? []))
+                                            ->map(fn($v)=>(string)$v)->all();
+                @endphp
+
+                <div id="elementsContainer" class="mt-3 flex flex-wrap gap-3">
+                    @forelse ($elements as $el)
+                        @php $checked = in_array((string)$el->id, $checkedElementIds, true); @endphp
+                        <div class="flex items-center gap-2 px-2 py-1 rounded-md ring-1 ring-slate-200 bg-slate-50" data-element-id="{{ $el->id }}">
+                            <label class="inline-flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="elements[]"
+                                       class="rounded-md border border-slate-400 focus:border-slate-600 focus:ring-slate-500"
+                                       value="{{ $el->id }}" @checked($checked)>
+                                <span class="select-none">{{ $el->title }}</span>
+                            </label>
+                        </div>
+                    @empty
+                        <p class="text-sm text-slate-500">選択できるシナリオ要素がありません。</p>
+                    @endforelse
+                </div>
+
+                <p class="mt-2 text-xs text-slate-500">選択中：<span id="selectedElementsList">（読み込み中）</span></p>
+                @error('elements')   <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                @error('elements.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+
         {{-- メモ --}}
         <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
             <label class="block text-sm font-medium text-slate-700">メモ</label>
@@ -351,6 +397,113 @@
             /* 初期化 */
             updateSelectedKindsText();
             resetPreview();
+
+
+            /* シナリオ要素：表示更新・全選択/解除 */
+            const elementsCtn   = document.getElementById('elementsContainer');
+            const selectedElsEl = document.getElementById('selectedElementsList');
+            const updateSelectedElementsText = () => {
+                if (!elementsCtn || !selectedElsEl) return;
+                const selected = [...elementsCtn.querySelectorAll('input[type=checkbox]:checked')]
+                    .map(cb => cb.closest('label')?.querySelector('span')?.textContent?.trim())
+                    .filter(Boolean);
+                selectedElsEl.textContent = selected.length ? selected.join(', ') : 'なし';
+            };
+            elementsCtn?.addEventListener('change', e => {
+                if (e.target.matches('input[type=checkbox]')) updateSelectedElementsText();
+            });
+            document.querySelector('[data-select-all="elements"]')?.addEventListener('click', () => {
+                elementsCtn?.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+                updateSelectedElementsText();
+            });
+            document.querySelector('[data-clear="elements"]')?.addEventListener('click', () => {
+                elementsCtn?.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+                updateSelectedElementsText();
+            });
+
+            /* その場で新規登録（Ajax） for elements */
+            const newElInp  = document.getElementById('newElementTitle');
+            const addElBtn  = document.getElementById('addElementBtn');
+            const errElEl   = document.getElementById('newElementError');
+            const okElEl    = document.getElementById('newElementOk');
+
+            const normalize2 = s => (s || '').trim().replace(/\s+/g, ' ');
+            const existsInElementsByTitle = (title) => {
+                const titles = [...elementsCtn.querySelectorAll('label span')].map(s => s.textContent.trim().toLowerCase());
+                return titles.includes(title.trim().toLowerCase());
+            };
+            const appendElementChip = ({id, title}) => {
+                const exists = elementsCtn.querySelector(`[data-element-id="${id}"]`);
+                if (exists) {
+                    exists.querySelector('input[type=checkbox]').checked = true;
+                    updateSelectedElementsText();
+                    return;
+                }
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2 px-2 py-1 rounded-md ring-1 ring-slate-200 bg-slate-50';
+                div.dataset.elementId = String(id);
+                div.innerHTML = `
+    <label class="inline-flex items-center gap-2 text-sm">
+      <input type="checkbox" name="elements[]" class="rounded-md border border-slate-400 focus:border-slate-600 focus:ring-slate-500" value="${id}" checked>
+      <span class="select-none"></span>
+    </label>`;
+                div.querySelector('span').textContent = title;
+                elementsCtn.appendChild(div);
+                updateSelectedElementsText();
+            };
+            const showElErr = (msg) => { if (okElEl){ okElEl.style.display='none'; okElEl.textContent=''; } if (errElEl){ errElEl.textContent = msg; errElEl.style.display=''; } };
+            const showElOk  = (msg) => { if (errElEl){ errElEl.style.display='none'; errElEl.textContent=''; } if (okElEl){ okElEl.textContent = msg; okElEl.style.display=''; } };
+
+            const addElement = async () => {
+                const title = normalize2(newElInp?.value ?? '');
+                if (!title) { showElErr('シナリオ要素を入力してください。'); return; }
+                if (existsInElementsByTitle(title)) {
+                    [...elementsCtn.querySelectorAll('label')].forEach(l => {
+                        if (l.querySelector('span')?.textContent?.trim().toLowerCase() === title.toLowerCase()) {
+                            l.querySelector('input[type=checkbox]').checked = true;
+                        }
+                    });
+                    updateSelectedElementsText();
+                    showElOk('既に一覧にあるため選択しました。');
+                    newElInp.value = '';
+                    return;
+                }
+                try {
+                    addElBtn.disabled = true; showElOk(''); showElErr('');
+                    const res = await fetch(`{{ route('elements.inline') }}`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ title }),
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        appendElementChip(data.element);
+                        showElOk('シナリオ要素を追加しました。');
+                        newElInp.value = '';
+                    } else if (res.status === 422) {
+                        const data = await res.json();
+                        const msg = (data?.errors?.title && data.errors.title.join(' ')) || '既に登録されています。';
+                        showElErr(msg);
+                    } else {
+                        showElErr('追加に失敗しました（' + res.status + '）。');
+                    }
+                } catch {
+                    showElErr('通信に失敗しました。ネットワークをご確認ください。');
+                } finally {
+                    addElBtn.disabled = false;
+                }
+            };
+            addElBtn?.addEventListener('click', addElement);
+            newElInp?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); addElement(); } });
+
+            /* 初期化 */
+            updateSelectedElementsText();
         })();
     </script>
 @endsection

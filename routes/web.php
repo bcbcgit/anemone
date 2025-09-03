@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ElementController;
 use App\Http\Controllers\KindController;
 use App\Http\Controllers\ScenarioController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,10 @@ Route::middleware('auth')->group(function () {
     // シナリオ分類
     Route::resource('kinds', KindController::class)->only(['index','store','update','destroy']);
     Route::post('/kinds/inline', [KindController::class, 'inlineStore'])->name('kinds.inline');
+
+    // シナリオ要素
+    Route::resource('elements', ElementController::class)->only(['index','store','update','destroy']);
+    Route::post('/elements/inline', [ElementController::class, 'inlineStore'])->name('elements.inline');
 
     // ログアウト
     Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');

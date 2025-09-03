@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreScenarioRequest;
 use App\Http\Requests\UpdateScenarioRequest;
+use App\Models\Element;
 use App\Models\Kind;
 use App\Models\Scenario;
 use Illuminate\Support\Facades\DB;
@@ -19,18 +20,20 @@ class ScenarioController extends Controller
     {
         // 種別は表示名順、シナリオはID降順で kinds を eager load
         $kinds = Kind::orderBy('title')->get();
-        $scenarios = Scenario::with('kinds:id,title')
+        $elements = Element::orderBy('title')->get();
+        $scenarios = Scenario::with('kinds:id,title','elements:id,title')
             ->latest('id')
             ->get();
 
-        return view('scenarios.index', compact('kinds', 'scenarios'));
+        return view('scenarios.index', compact('kinds', 'elements','scenarios'));
     }
 
     /** 新規画面 */
     public function create()
     {
         $kinds = Kind::orderBy('title')->get();
-        return view('scenarios.create', compact('kinds'));
+        $elements = Element::orderBy('title')->get();
+        return view('scenarios.create', compact('kinds','elements'));
     }
 
     /** 保存 */
@@ -55,6 +58,7 @@ class ScenarioController extends Controller
             ]);
 
             $scenario->kinds()->sync($request->input('kinds', []));
+            $scenario->elements()->sync($request->input('elements', []));
 
             DB::commit();
             return redirect()->route('scenarios.index')->with('success', 'シナリオを登録しました。');
@@ -70,13 +74,15 @@ class ScenarioController extends Controller
     // 更新画像
     public function show(Scenario $scenario) {
         $kinds = Kind::orderBy('title')->get();
-        return view('scenarios.show', compact('scenario','kinds'));
+        $elements = Element::orderBy('title')->get();
+        return view('scenarios.show', compact('scenario','kinds', 'elements'));
     }
 
     // 更新画像
     public function edit(Scenario $scenario) {
         $kinds = Kind::orderBy('title')->get();
-        return view('scenarios.edit', compact('scenario','kinds'));
+        $elements = Element::orderBy('title')->get();
+        return view('scenarios.edit', compact('scenario','kinds', 'elements'));
     }
 
     /** 更新（画像差し替え対応） */
@@ -105,6 +111,8 @@ class ScenarioController extends Controller
 
             // 種別の同期
             $scenario->kinds()->sync($request->input('kinds', []));
+            // 要素の同期
+            $scenario->elements()->sync($request->input('elements', []));
 
             DB::commit();
 

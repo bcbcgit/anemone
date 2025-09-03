@@ -38,12 +38,20 @@ class StoreScenarioRequest extends FormRequest
 
             'kinds'   => ['nullable','array'],
             'kinds.*' => ['integer','exists:kinds,id'],
+
+            'elements'   => ['nullable','array'],
+            'elements.*' => ['integer','exists:elements,id'],
         ];
     }
 
 
     public function attributes(): array
     {
-        return ['kinds' => 'シナリオ種別', 'kinds.*' => 'シナリオ種別'];
+        return [
+            'kinds'   => 'シナリオ種別',
+            'kinds.*' => 'シナリオ種別',
+            'elements'   => 'シナリオ要素',
+            'elements.*' => 'シナリオ要素',
+        ];
     }
 }

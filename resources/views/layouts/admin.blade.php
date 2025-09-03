@@ -102,6 +102,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('elements.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800">
+                    <i class="fa-solid fa-users text-slate-300 w-5"></i>
+                    シナリオ要素管理
+                </a>
+            </li>
+            <li>
                 <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800">
                     <i class="fa-solid fa-gear text-slate-300 w-5"></i>
                     設定

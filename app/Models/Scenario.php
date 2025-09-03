@@ -17,4 +17,9 @@ class Scenario extends Model
         return $this->belongsToMany(Kind::class)->withTimestamps();
         // 別名にしたなら ->belongsToMany(Kind::class, 'kinds_scenarios')
     }
+
+    public function elements()
+    {
+        return $this->belongsToMany(Element::class)->withTimestamps();
+    }
 }

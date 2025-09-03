@@ -49,6 +49,10 @@ class UpdateScenarioRequest extends FormRequest
             // シナリオ種別（多対多）
             'kinds'   => ['nullable', 'array'],
             'kinds.*' => ['integer', 'exists:kinds,id'],
+
+            // シナリオ要素（多対多）
+            'elements'   => ['nullable', 'array'],
+            'elements.*' => ['integer', 'exists:elements,id'],
         ];
     }
 
@@ -57,6 +61,8 @@ class UpdateScenarioRequest extends FormRequest
         return [
             'kinds'   => 'シナリオ種別',
             'kinds.*' => 'シナリオ種別',
+            'elements'   => 'シナリオ要素',
+            'elements.*' => 'シナリオ要素',
         ];
     }
 }
