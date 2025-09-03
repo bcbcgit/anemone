@@ -3,7 +3,7 @@
 
 @section('title', 'シナリオ管理')
 @section('page_title', 'シナリオ一覧')
-@section('page_desc', '本文検索 / 種別絞り込み / 要素絞り込み / 列ソート（JSのみ）')
+@section('page_desc', '絞り込み検索/ポップアップは消えない場合はESCボタンで消えます')
 
 @section('content')
     @php
@@ -64,10 +64,6 @@
                 @endforelse
             </div>
         </div>
-
-        <p class="text-xs text-slate-500">
-            ※ 種別・要素は「選択したすべてを含む（AND）」かつ本文検索に一致した行のみ表示します。
-        </p>
         <p id="resultCount" class="text-xs text-slate-600">表示件数: 0 件</p>
     </div>
 
