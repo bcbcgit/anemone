@@ -1,0 +1,19 @@
+/* ==========================================================================
+  Common
+========================================================================== */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 transparent; }
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px; }
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 9999px; }
+
+@layer components {
+  .form-input {
+    @apply w-full rounded-md border border-slate-400
+    focus:border-slate-600 focus:ring focus:ring-slate-500
+    focus:outline-none transition; } }

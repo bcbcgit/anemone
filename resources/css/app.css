@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* 使うなら（npmで入れている場合のみ） */
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+.form-input {
+    @apply w-full rounded-md border border-slate-400
+    focus:border-slate-600 focus:ring focus:ring-slate-500
+    focus:outline-none transition;
+}

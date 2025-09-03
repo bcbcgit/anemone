@@ -1,0 +1,21 @@
+// vite.config.js
+import { defineConfig } from 'vite'
+import laravel from 'laravel-vite-plugin'
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+            refresh: true,
+        }),
+    ],
+    server: {
+        host: '127.0.0.1',   // ← ここが重要
+        port: 5173,
+        hmr: {
+            host: '127.0.0.1', // ← ここも重要
+            protocol: 'http',
+            port: 5173,
+        },
+    },
+})

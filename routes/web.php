@@ -1,0 +1,33 @@
+<?php
+
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\KindController;
+use App\Http\Controllers\ScenarioController;
+use Illuminate\Support\Facades\Route;
+
+// ------- guest 専用 -------
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+
+    // ルートは login へ
+    Route::get('/', fn () => redirect()->route('login'));
+});
+
+// ------- auth 専用 -------
+Route::middleware('auth')->group(function () {
+    // シナリオ
+    Route::resource('scenarios', ScenarioController::class);
+
+    // シナリオ分類
+    Route::resource('kinds', KindController::class)->only(['index','store','update','destroy']);
+    Route::post('/kinds/inline', [KindController::class, 'inlineStore'])->name('kinds.inline');
+
+    // ユーザー登録
+    Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin.users.create');
+    Route::post('/admin/users', [UserController::class, 'store'])->name('admin.users.store');
+
+    // ログアウト
+    Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+});
