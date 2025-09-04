@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\CharacterPointController;
 use App\Http\Controllers\ElementController;
 use App\Http\Controllers\KindController;
 use App\Http\Controllers\ScenarioController;
+use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
 
 // ------- guest 専用 -------
@@ -32,6 +35,20 @@ Route::middleware('auth')->group(function () {
     // シナリオ要素
     Route::resource('elements', ElementController::class)->only(['index','store','update','destroy']);
     Route::post('/elements/inline', [ElementController::class, 'inlineStore'])->name('elements.inline');
+
+    // キャラクター一覧
+    Route::get('/characters', [CharacterPointController::class, 'index'])->name('characters.index');
+
+    // キャラクター登録
+    Route::resource('characters', CharacterController::class)->only(['create','store']);
+
+    // ポイント+1（必要なら+Nに拡張）
+    Route::post('/characters/{character}/increment', [CharacterPointController::class, 'increment'])
+        ->name('characters.increment');
+
+    // 未使用チケットを1枚消費
+    Route::post('/characters/{character}/tickets/use-one', [TicketController::class, 'useOne'])
+        ->name('tickets.useOne');
 
     // ログアウト
     Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');

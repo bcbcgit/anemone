@@ -108,6 +108,18 @@
                 </a>
             </li>
             <li>
+                <a href="{{ route('characters.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800">
+                    <i class="fa-solid fa-users text-slate-300 w-5"></i>
+                    キャラクター管理
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('characters.create') }}" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800">
+                    <i class="fa-solid fa-users text-slate-300 w-5"></i>
+                    キャラクター登録
+                </a>
+            </li>
+            <li>
                 <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800">
                     <i class="fa-solid fa-gear text-slate-300 w-5"></i>
                     設定
