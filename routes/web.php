@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterPointController;
+use App\Http\Controllers\CharactersMemoController;
 use App\Http\Controllers\ElementController;
 use App\Http\Controllers\KindController;
 use App\Http\Controllers\ScenarioController;
@@ -49,6 +50,10 @@ Route::middleware('auth')->group(function () {
     // 未使用チケットを1枚消費
     Route::post('/characters/{character}/tickets/use-one', [TicketController::class, 'useOne'])
         ->name('tickets.useOne');
+
+    // メモ 読み込み／保存（JSON）
+    Route::get('/characters/memo',  [CharactersMemoController::class, 'show'])->name('characters.memo.show');
+    Route::post('/characters/memo', [CharactersMemoController::class, 'save'])->name('characters.memo.save');
 
     // ログアウト
     Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');

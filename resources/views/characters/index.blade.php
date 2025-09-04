@@ -47,6 +47,31 @@
         </div>
     </div>
 
+    {{-- 既存カードの下に追加 --}}
+    <div class="rounded-md border border-slate-200 bg-white p-4 shadow-sm space-y-3">
+        <div class="flex items-baseline justify-between">
+            <h2 class="text-sm font-semibold text-slate-700">このページ用メモ</h2>
+            <div class="text-xs text-slate-500">
+                最終保存: <span id="memoUpdatedAt">—</span>
+            </div>
+        </div>
+
+        <textarea id="memoContent" rows="8"
+                  class="block w-full rounded-md border border-slate-300 px-3 py-2 text-sm
+               focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  placeholder="このページに関するメモを書いて保存できます（テキストファイルに保存されます）"></textarea>
+
+        <div class="flex items-center gap-3">
+            <button id="memoSaveBtn"
+                    class="px-4 py-2 rounded-md border border-slate-300 bg-slate-50 hover:bg-slate-100 text-sm">
+                保存
+            </button>
+            <span id="memoFlash" class="text-xs text-emerald-700 hidden">保存しました</span>
+            <span id="memoError" class="text-xs text-rose-700 hidden"></span>
+        </div>
+    </div>
+
+
     {{-- Ajax（vanilla fetch） --}}
     <script>
         (function(){
@@ -124,4 +149,86 @@
             });
         })();
     </script>
+
+    <script>
+        (function(){
+            const token = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const elContent = document.getElementById('memoContent');
+            const elSave    = document.getElementById('memoSaveBtn');
+            const elFlash   = document.getElementById('memoFlash');
+            const elError   = document.getElementById('memoError');
+            const elUpdated = document.getElementById('memoUpdatedAt');
+
+            const showFlash = (msg='保存しました') => {
+                elError.classList.add('hidden'); elError.textContent = '';
+                elFlash.textContent = msg; elFlash.classList.remove('hidden');
+                setTimeout(()=> elFlash.classList.add('hidden'), 1200);
+            };
+            const showError = (msg='保存に失敗しました') => {
+                elFlash.classList.add('hidden');
+                elError.textContent = msg; elError.classList.remove('hidden');
+                setTimeout(()=> elError.classList.add('hidden'), 2000);
+            };
+
+            // 読み込み
+            const loadMemo = async () => {
+                try {
+                    const res = await fetch(`{{ route('characters.memo.show') }}`, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {'X-Requested-With':'XMLHttpRequest','Accept':'application/json'},
+                    });
+                    if (!res.ok) throw new Error(res.status);
+                    const data = await res.json();
+                    elContent.value = data.content || '';
+                    elUpdated.textContent = data.updated_at ?? '—';
+                } catch (e) {
+                    showError('メモの読み込みに失敗しました');
+                }
+            };
+
+            // 保存
+            const saveMemo = async () => {
+                try {
+                    const res = await fetch(`{{ route('characters.memo.save') }}`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ content: elContent.value }),
+                    });
+                    if (!res.ok) {
+                        const t = await res.text();
+                        throw new Error(t || res.status);
+                    }
+                    const data = await res.json();
+                    elUpdated.textContent = data.updated_at ?? '—';
+                    showFlash();
+                } catch (e) {
+                    showError('保存に失敗しました');
+                }
+            };
+
+            // クリック保存
+            elSave?.addEventListener('click', (e) => {
+                e.preventDefault();
+                saveMemo();
+            });
+
+            // 入力の自動保存（1.5秒停止で保存）
+            let timer = null;
+            elContent?.addEventListener('input', () => {
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(saveMemo, 1500);
+            });
+
+            // 初回ロード
+            loadMemo();
+        })();
+    </script>
+
 @endsection
