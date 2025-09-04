@@ -1,8 +1,8 @@
 {{-- resources/views/characters/index.blade.php --}}
 @extends('layouts.admin')
 
-@section('title','キャラクター管理')
-@section('page_title','キャラクター管理')
+@section('title','クリチケ管理')
+@section('page_title','クリチケ管理')
 
 @section('content')
     <div class="max-w-4xl mx-auto space-y-6">
@@ -11,7 +11,7 @@
                 <thead>
                 <tr class="text-left text-slate-500">
                     <th class="py-2 pr-3">ID</th>
-                    <th class="py-2 pr-3">キャラクター</th>
+                    <th class="py-2 pr-3">対象</th>
                     <th class="py-2 pr-3">ポイント</th>
                     <th class="py-2 pr-3">未使用チケット</th>
                     <th class="py-2 pr-3 w-52">操作</th>
