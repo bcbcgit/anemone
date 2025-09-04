@@ -77,7 +77,7 @@
                         ID <span class="js-sort-icon text-slate-400">↕</span>
                     </button>
                 </th>
-                <th class="py-2 px-3">メイン画像</th>
+                <th class="py-2 px-3 whitespace-nowrap">メイン画像</th>
                 <th class="py-2 px-3">
                     <button type="button" class="inline-flex items-center gap-1 js-sort" data-key="title">
                         タイトル <span class="js-sort-icon text-slate-400">↕</span>
@@ -133,7 +133,7 @@
                     <td class="py-2 px-3 font-medium text-slate-900">
                         <a href="{{ route('scenarios.edit', $scenario) }}">{{ $scenario->id }}</a>
                     </td>
-                    <td class="py-2 px-3 whitespace-nowrap">
+                    <td class="py-2 px-3">
                         <a href="{{ route('scenarios.show', $scenario) }}">
                             <img src="{{ $img }}" alt="" class="w-16 h-16 object-cover rounded-md ring-1 ring-slate-200 bg-slate-50">
                         </a>
