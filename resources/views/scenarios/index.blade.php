@@ -77,7 +77,7 @@
                         ID <span class="js-sort-icon text-slate-400">↕</span>
                     </button>
                 </th>
-                <th class="py-2 px-3 whitespace-nowrap">メイン画像</th>
+                <th class="py-2 px-3" style="white-space:nowrap;">メイン画像</th>
                 <th class="py-2 px-3">
                     <button type="button" class="inline-flex items-center gap-1 js-sort" data-key="title">
                         タイトル <span class="js-sort-icon text-slate-400">↕</span>
