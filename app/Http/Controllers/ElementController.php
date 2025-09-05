@@ -43,9 +43,9 @@ class ElementController extends Controller
     }
 
 
-    public function destroy(Request $request, Element $elements)
+    public function destroy(Request $request, Element $element)
     {
-        $elements->delete();
+        $element->delete();
         return response()->json(['ok'=>true]);
     }
 

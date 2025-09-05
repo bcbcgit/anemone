@@ -43,9 +43,9 @@ class KindController extends Controller
     }
 
 
-    public function destroy(Request $request, Kind $kinds)
+    public function destroy(Request $request, Kind $kind)
     {
-        $kinds->delete();
+        $kind->delete();
         return response()->json(['ok'=>true]);
     }
 
