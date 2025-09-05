@@ -40,33 +40,39 @@ class ScenarioController extends Controller
     /** 保存 */
     public function store(StoreScenarioRequest $request)
     {
+        // 画像は先に保存（DBはまだ未確定なので、あとで失敗したら消す）
         $savedPath = null;
+        if ($request->hasFile('image')) {
+            $savedPath = $this->saveResizedImage($request->file('image'));
+        }
 
         try {
-            DB::beginTransaction();
+            // ここが「全部成功したら確定、例外出たら自動でロールバック」
+            $scenario = DB::transaction(function () use ($request, $savedPath) {
+                $scenario = Scenario::create([
+                    'title'   => $request->input('title'),
+                    'url'     => $request->input('url'),
+                    'body'    => $request->input('body'),
+                    'visible' => (int) $request->input('visible', 1),
+                    'memo'    => $request->input('memo'),
+                    'image'   => $savedPath,
+                ]);
 
-            if ($request->hasFile('image')) {
-                $savedPath = $this->saveResizedImage($request->file('image')); // 共通化
-            }
+                $scenario->kinds()->sync($request->input('kinds', []));
+                $scenario->elements()->sync($request->input('elements', []));
 
-            $scenario = Scenario::create([
-                'title'   => $request->input('title'),
-                'url'     => $request->input('url'),
-                'body'    => $request->input('body'),
-                'visible' => (int) $request->input('visible', 1),
-                'memo'    => $request->input('memo'),
-                'image'   => $savedPath,
-            ]);
+                return $scenario; // ← 必要なら呼び出し元で使える
+            });
 
-            $scenario->kinds()->sync($request->input('kinds', []));
-            $scenario->elements()->sync($request->input('elements', []));
-
-            DB::commit();
-            return redirect()->route('scenarios.index')->with('success', 'シナリオを登録しました。');
+            // ここに来た時点でコミット済み
+            return redirect()->route('scenarios.index')
+                ->with('success', 'シナリオを登録しました。');
 
         } catch (\Throwable $e) {
-            DB::rollBack();
-            if ($savedPath) Storage::disk('public')->delete($savedPath);
+            // 例外時は transaction が rollBack 済み。ファイルだけ手動で片付け
+            if ($savedPath) {
+                Storage::disk('public')->delete($savedPath);
+            }
             report($e);
             return back()->withErrors('シナリオの保存に失敗しました。')->withInput();
         }
